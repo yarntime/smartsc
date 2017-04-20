@@ -1,0 +1,54 @@
+# exposing smartsc as a service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: smartsc
+    type: api
+  name: smartsc
+  namespace: kube-system
+spec:
+  ports:
+  - name: api
+    port: 8000
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: smartsc
+    type: api
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: smartsc
+    type: api
+  name: smartsc
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: smartsc
+      type: api
+  template:
+    metadata:
+      labels:
+        app: smartsc
+        type: api
+      name: smartsc
+    spec:
+      containers:
+      - name: smartsc
+        image: reg.skycloud.com:5000/firmament/smartsc
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: api
+          protocol: TCP
+		env:
+           - name: KUBERNETES_URL
+             valueFrom:
+               configMapKeyRef:
+                 name: config
+                 key: kubernetes.url
