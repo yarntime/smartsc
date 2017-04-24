@@ -1,7 +1,9 @@
 package api
 
+import "sync"
+
 type SchedulerInfoCache struct {
-	cache []*SchedulerInfo
+	Infos map[string]*SchedulerInfo
 }
 
 type FeedBackList struct {
@@ -9,19 +11,20 @@ type FeedBackList struct {
 }
 
 type SchedulerInfo struct {
-	Node string `json:"node"`
+	sync.Mutex
+	Node       string          `json:"node"`
 	Predicates *PredicatesInfo `json:"predicates"`
 	Priorities *PrioritiesInfo `json:"priorities"`
 }
 
 type PredicatesInfo struct {
 	NodeStates bool `json:"nodeStatus"`
-	NodeAlarms int `json:"nodeAlarms"`
+	NodeAlarms int  `json:"nodeAlarms"`
 }
 
 type PrioritiesInfo struct {
-	CpuLoad float32 `json:"cpuLoad"`
-	MemoryLoad float32 `json:"memoryLoad"`
-	DiskIO  float32  `json:"diskIO"`
-	NetworkIO float32 `json:"networkIO"`
+	CpuLoad    int `json:"cpuLoad"`
+	MemoryLoad int `json:"memoryLoad"`
+	DiskIO     int `json:"diskIO"`
+	NetworkIO  int `json:"networkIO"`
 }

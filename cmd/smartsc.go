@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"github.com/urfave/cli"
-	"os"
 	log "github.com/Sirupsen/logrus"
 	"github.com/emicklei/go-restful"
+	"github.com/urfave/cli"
 	"net/http"
+	"os"
 	"smartsc/internal/controller"
 )
 
@@ -24,7 +24,7 @@ func main() {
 	app.Run(os.Args)
 }
 
-func startSmartsc(ctx *cli.Context) {
+func startSmartsc(ctx *cli.Context) error {
 	log.Info("Starting Rudder...")
 
 	// main container

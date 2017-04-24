@@ -3,8 +3,6 @@ package client
 import (
 	k8s "k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/pkg/api/v1"
-	v1beta1 "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"k8s.io/client-go/pkg/labels"
 	watch "k8s.io/client-go/pkg/watch"
 	"k8s.io/client-go/rest"
 )
