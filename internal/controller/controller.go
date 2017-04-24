@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/emicklei/go-restful"
 	"k8s.io/kubernetes/pkg/api/v1"
 	model1 "k8s.io/kubernetes/plugin/pkg/scheduler/api/v1"
@@ -106,6 +107,30 @@ func (rr *Controller) prioritizeNode(req *restful.Request, res *restful.Response
 	if err := req.ReadEntity(&args); err != nil {
 		errorResponse(res, errFailToReadResponse)
 		return
+	}
+
+	result := model1.HostPriorityList{}
+
+	pod := args.Pod
+	for i := 0; i < len(args.Nodes.Items); i++ {
+		nodeName := args.Nodes.Items[i].Name
+		score := 0
+		for k, priority := range rr.priFactory.PriMap {
+			pri, err := priority(&pod, nodeName)
+			if err != nil {
+				fmt.Printf("failed to calculate score for priority " + k)
+				continue
+			}
+			score += pri.Score
+		}
+		result = append(result, model1.HostPriority{
+			Host:  nodeName,
+			Score: score,
+		})
+	}
+
+	if err := res.WriteEntity(result); err != nil {
+		errorResponse(res, errFailToWriteResponse)
 	}
 }
 
