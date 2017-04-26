@@ -5,6 +5,7 @@ import (
 	"github.com/emicklei/go-restful"
 	"k8s.io/client-go/pkg/watch"
 	"k8s.io/kubernetes/pkg/api/v1"
+	clientv1 "k8s.io/client-go/pkg/api/v1"
 	model1 "k8s.io/kubernetes/plugin/pkg/scheduler/api/v1"
 	api "smartsc/internal/api"
 	"smartsc/internal/cache"
@@ -70,19 +71,19 @@ func (rr *Controller) Register(container *restful.Container) {
 }
 
 func (rr *Controller) watchNodes() {
-	listOptions := v1.ListOptions{}
+	listOptions := clientv1.ListOptions{}
 
 	nw, err := rr.k8sClient.WatchNodes(listOptions)
 	if err != nil {
 		fmt.Printf("failed to watch nodes\n")
-		return err
+		return
 	}
 	defer nw.Stop()
 
 	for {
 		select {
 		case t := <-nw.ResultChan():
-			node := t.Object.(*v1.Node)
+			node := t.Object.(*clientv1.Node)
 			if t.Type == watch.Added {
 				rr.jobController.StartTrainingJob(node.Name)
 			}
