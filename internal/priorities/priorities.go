@@ -33,6 +33,7 @@ func NewPriorityFactory() *PriorityFactory {
 }
 
 func LeastCpuLoadPriority(pod *v1.Pod, node string) (schedulerapi.HostPriority, error) {
+	//TODO: Check if the cache is available
 	cacheInfo := cache.Cache.Infos[node]
 	return schedulerapi.HostPriority{
 		Host:  node,
