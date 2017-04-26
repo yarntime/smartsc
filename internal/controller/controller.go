@@ -3,19 +3,22 @@ package controller
 import (
 	"fmt"
 	"github.com/emicklei/go-restful"
+	"k8s.io/client-go/pkg/watch"
 	"k8s.io/kubernetes/pkg/api/v1"
 	model1 "k8s.io/kubernetes/plugin/pkg/scheduler/api/v1"
 	api "smartsc/internal/api"
 	"smartsc/internal/cache"
+	"smartsc/internal/job"
 	"smartsc/internal/predicates"
 	"smartsc/internal/priorities"
 	utils "smartsc/utils"
 )
 
 type Controller struct {
-	k8sClient  *utils.K8sClient
-	fitFactory *predicates.PredicateFactory
-	priFactory *priorities.PriorityFactory
+	k8sClient     *utils.K8sClient
+	fitFactory    *predicates.PredicateFactory
+	priFactory    *priorities.PriorityFactory
+	jobController *job.JobController
 }
 
 func NewController() *Controller {
@@ -23,11 +26,16 @@ func NewController() *Controller {
 		Infos: make(map[string]*api.SchedulerInfo),
 	}
 
-	return &Controller{
-		k8sClient:  utils.NewK8sClint(),
-		fitFactory: predicates.NewPriorityFactory(),
-		priFactory: priorities.NewPriorityFactory(),
+	c := &Controller{
+		k8sClient:     utils.NewK8sClint(),
+		fitFactory:    predicates.NewPriorityFactory(),
+		priFactory:    priorities.NewPriorityFactory(),
+		jobController: job.NewJobController(),
 	}
+
+	go c.watchNodes()
+
+	return c
 }
 
 // Register registers this to the provided container
@@ -59,6 +67,33 @@ func (rr *Controller) Register(container *restful.Container) {
 		Operation("feedBack"))
 
 	container.Add(ws)
+}
+
+func (rr *Controller) watchNodes() {
+	listOptions := v1.ListOptions{}
+
+	nw, err := rr.k8sClient.WatchNodes(listOptions)
+	if err != nil {
+		fmt.Printf("failed to watch nodes\n")
+		return err
+	}
+	defer nw.Stop()
+
+	for {
+		select {
+		case t := <-nw.ResultChan():
+			node := t.Object.(*v1.Node)
+			if t.Type == watch.Added {
+				rr.jobController.StartTrainingJob(node.Name)
+			}
+			if t.Type == watch.Modified {
+				rr.jobController.UpdateTrainingJob(node.Name)
+			}
+			if t.Type == watch.Deleted {
+				rr.jobController.DeleteTrainingJob(node.Name)
+			}
+		}
+	}
 }
 
 func (rr *Controller) filterNode(req *restful.Request, res *restful.Response) {
