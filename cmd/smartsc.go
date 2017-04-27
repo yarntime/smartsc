@@ -25,7 +25,7 @@ func main() {
 }
 
 func startSmartsc(ctx *cli.Context) error {
-	log.Info("Starting Rudder...")
+	log.Info("Starting Smartsc...")
 
 	// main container
 	container := restful.NewContainer()
