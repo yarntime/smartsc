@@ -3,6 +3,7 @@ package client
 import (
 	k8s "k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	watch "k8s.io/client-go/pkg/watch"
 	"k8s.io/client-go/rest"
 )
@@ -31,4 +32,8 @@ func NewK8sClint() *K8sClient {
 
 func (c *K8sClient) WatchNodes(listOption v1.ListOptions) (watch.Interface, error) {
 	return c.clientset.CoreV1().Nodes().Watch(listOption)
+}
+
+func (c *K8sClient) CreateDeployment(dep *v1beta1.Deployment) (*v1beta1.Deployment, error) {
+	return c.clientset.ExtensionsV1beta1Client.Deployments(dep.Namespace).Create(dep)
 }
