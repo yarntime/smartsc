@@ -37,3 +37,7 @@ func (c *K8sClient) WatchNodes(listOption v1.ListOptions) (watch.Interface, erro
 func (c *K8sClient) CreateDeployment(dep *v1beta1.Deployment) (*v1beta1.Deployment, error) {
 	return c.clientset.ExtensionsV1beta1Client.Deployments(dep.Namespace).Create(dep)
 }
+
+func (c *K8sClient) DeleteDeployment(dep *v1beta1.Deployment) error {
+	return c.clientset.ExtensionsV1beta1Client.Deployments(dep.Namespace).Delete(dep.Name, nil)
+}

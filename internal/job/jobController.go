@@ -69,10 +69,12 @@ func (jc *JobController) StartTrainingJob(node string) {
 	jc.k8sClient.CreateDeployment(dep)
 }
 
+// not sure what to do.
 func (jc *JobController) UpdateTrainingJob(node string) {
 
 }
 
+// delete the corresponding deployments
 func (jc *JobController) DeleteTrainingJob(node string) {
 
 }
